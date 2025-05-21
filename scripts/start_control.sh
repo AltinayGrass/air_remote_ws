@@ -33,7 +33,7 @@ fi
 ssh -t ${REMOTE_USER}@${REMOTE_HOST} << "EOF"
 
 SESSION_NAME="robot"
-
+WAIT_TIME=10
 # EtherCAT kontrolü ve Docker başlatma
 if ! systemctl is-active --quiet ethercat; then
   echo '🚀 Starting EtherCAT...'
@@ -43,6 +43,10 @@ fi
 
 echo "🔍 Checking for tmux session '$SESSION_NAME'..."
 if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+    echo "🧹 sending Ctrl-c to tmux session '$SESSION_NAME':camera... to save location"
+    tmux send-keys -t "$SESSION_NAME:camera" 'C-C'
+    echo "⏳ Waiting $WAIT_TIME seconds for graceful shutdown..."
+    sleep $WAIT_TIME
     echo "🛑 Killing tmux session '$SESSION_NAME'..."
     tmux kill-session -t "$SESSION_NAME"
     echo "✅ tmux session killed."
